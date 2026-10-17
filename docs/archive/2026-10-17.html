@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Stock Briefing — 2026-10-17</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --text:#1a1d23; --muted:#6b7280;
+    --border:#e5e7eb; --accent:#2563eb; --up:#15803d; --up-bg:#e8f5ec;
+    --down:#b91c1c; --down-bg:#fdecec; --neutral:#6b7280;
+    --tag-bg:#eef2ff; --tag-text:#3730a3;
+    --gold-bg:#fff7e6; --gold-text:#92610a;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1115; --card:#181b21; --text:#e8e9ec; --muted:#9aa1ab;
+      --border:#2a2e37; --accent:#5b8def; --up:#4ade80; --up-bg:#123420;
+      --down:#f87171; --down-bg:#3a1414; --neutral:#9aa1ab;
+      --tag-bg:#1e2440; --tag-text:#a5b4fc;
+      --gold-bg:#2b2210; --gold-text:#fbbf24;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1115; --card:#181b21; --text:#e8e9ec; --muted:#9aa1ab;
+    --border:#2a2e37; --accent:#5b8def; --up:#4ade80; --up-bg:#123420;
+    --down:#f87171; --down-bg:#3a1414; --neutral:#9aa1ab;
+    --tag-bg:#1e2440; --tag-text:#a5b4fc;
+    --gold-bg:#2b2210; --gold-text:#fbbf24;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Pretendard,Roboto,"Noto Sans KR",sans-serif;
+    line-height:1.6; padding-bottom:60px;
+  }
+  .wrap{max-width:1080px; margin:0 auto; padding:0 16px;}
+  header.hero{ background:linear-gradient(135deg,#111827,#1f2937); color:#f9fafb; padding:36px 0 28px; }
+  header.hero .wrap{display:flex; flex-direction:column; gap:14px;}
+  .brand{font-size:13px; letter-spacing:.14em; color:#9ca3af; font-weight:600;}
+  .title{font-size:28px; font-weight:800; margin:0;}
+  .date{font-size:15px; color:#d1d5db;}
+  .mood-row{display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:6px;}
+  .mood-badge{ display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:999px; font-weight:700; font-size:14px; }
+  .mood-RISKOFF{background:#3a1414; color:#f87171; border:1px solid #7f1d1d;}
+  .mood-RISKON{background:#123420; color:#4ade80; border:1px solid #15803d;}
+  .mood-NEUTRAL{background:#3a2a0f; color:#fbbf24; border:1px solid #92610a;}
+  .asof{font-size:12.5px; color:#9ca3af;}
+  .insight-box{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); border-radius:12px; padding:16px 18px; margin-top:4px; }
+  .insight-box .label{font-size:12px; color:#9ca3af; font-weight:700; letter-spacing:.06em; margin-bottom:6px;}
+  .insight-box .line{font-size:16px; font-weight:600; color:#f9fafb;}
+
+  section{padding:34px 0;}
+  section.alt{background:var(--card); border-top:1px solid var(--border); border-bottom:1px solid var(--border);}
+  h2{font-size:20px; margin:0 0 4px; display:flex; align-items:center; gap:8px;}
+  h2 .num{color:var(--accent); font-weight:800;}
+  .section-desc{color:var(--muted); font-size:13.5px; margin:0 0 18px;}
+
+  .grid-5{display:grid; grid-template-columns:repeat(5,1fr); gap:10px;}
+  .grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  @media(max-width:900px){.grid-5{grid-template-columns:repeat(2,1fr);} .grid-3{grid-template-columns:1fr;}}
+  @media(max-width:520px){.grid-5{grid-template-columns:1fr 1fr;}}
+
+  .metric-card{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:14px 14px 12px; }
+  .metric-name{font-size:12.5px; color:var(--muted); font-weight:600;}
+  .metric-value{font-size:19px; font-weight:800; margin:4px 0 2px;}
+  .metric-change{font-size:13px; font-weight:700; display:inline-flex; align-items:center; gap:4px;}
+  .up{color:var(--up);} .down{color:var(--down);} .flat{color:var(--neutral);}
+  .metric-date{font-size:11px; color:var(--muted); margin-top:6px;}
+
+  .cause-block{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-top:16px; font-size:14.5px; }
+  .cause-block b{color:var(--accent);}
+
+  .chart-card{ background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px; margin-top:18px; }
+  .chart-card h3{margin:0 0 12px; font-size:15px;}
+  .chart-wrap{position:relative; height:300px;}
+  .chart-wrap.tall{height:360px;}
+  .chart-note{font-size:12px; color:var(--muted); margin-top:10px;}
+
+  table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  th,td{padding:8px 10px; text-align:left; border-bottom:1px solid var(--border);}
+  th{color:var(--muted); font-weight:600; font-size:12px;}
+  .table-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+
+  .stock-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-top:18px; }
+  .stock-head{display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:10px;}
+  .stock-name{font-size:18px; font-weight:800;}
+  .stock-ticker{font-size:12.5px; color:var(--muted); font-weight:600;}
+  .stock-price{text-align:right;}
+  .stock-price .val{font-size:20px; font-weight:800;}
+  .stance{ display:inline-block; margin-top:10px; padding:5px 12px; border-radius:999px; background:var(--tag-bg); color:var(--tag-text); font-weight:700; font-size:12.5px; }
+  .stance.gold{background:var(--gold-bg); color:var(--gold-text);}
+  .kv{margin-top:14px; display:grid; grid-template-columns:110px 1fr; gap:6px 12px; font-size:13.5px;}
+  .kv dt{color:var(--muted); font-weight:600;}
+  .kv dd{margin:0;}
+  .stance-reason{margin-top:12px; font-size:13.5px; background:var(--tag-bg); border-radius:10px; padding:10px 12px;}
+
+  .note-box{ background:var(--tag-bg); border-radius:12px; padding:14px 16px; font-size:13.5px; margin-top:12px; }
+  .cycle-badge{ display:inline-block; padding:6px 14px; border-radius:999px; font-weight:800; background:var(--up-bg); color:var(--up); font-size:14px; margin-bottom:10px; }
+  .warn-box{ background:var(--gold-bg); color:var(--gold-text); border-radius:10px; padding:10px 12px; font-size:13.5px; margin-top:12px; font-weight:600; }
+
+  .insight-grid{display:grid; grid-template-columns:1fr; gap:14px; margin-top:16px;}
+  .insight-card{ background:var(--card); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:10px; padding:16px 18px; }
+  .insight-card .k{font-size:12px; font-weight:800; color:var(--accent); letter-spacing:.04em; margin-bottom:6px;}
+  .insight-card .v{font-size:14.5px;}
+
+  .idea-card{ background:var(--card); border:1px solid var(--border); border-radius:14px; padding:20px; margin-top:16px; }
+  .idea-head{display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; align-items:flex-start;}
+  .idea-name{font-size:18px; font-weight:800;}
+  .idea-sector{font-size:12px; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:.03em;}
+  .idea-price{text-align:right; font-size:13.5px; color:var(--muted);}
+  .idea-price .val{font-size:17px; font-weight:800; color:var(--text);}
+  .idea-body-label{font-size:12px; color:var(--muted); font-weight:700; margin-top:12px;}
+  .idea-body-text{font-size:13.5px; margin-top:3px;}
+  .idea-tags{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px;}
+  .idea-tag{padding:4px 10px; border-radius:999px; background:var(--tag-bg); color:var(--tag-text); font-size:12px; font-weight:700;}
+  .score-row{display:flex; justify-content:space-between; font-size:12.5px; margin-top:4px;}
+  .score-bar-bg{background:var(--border); border-radius:6px; height:6px; margin-top:3px; overflow:hidden;}
+  .score-bar-fill{background:var(--accent); height:100%;}
+  .score-total{margin-top:10px; font-weight:800; font-size:14px;}
+  .score-just{font-size:12px; color:var(--muted); margin-top:10px; line-height:1.7;}
+  .highlight-card{ background:linear-gradient(135deg,#1f2937,#111827); color:#f9fafb; border-radius:16px; padding:22px; margin-top:16px; }
+  .highlight-card .tag{font-size:12px; letter-spacing:.08em; color:#93c5fd; font-weight:700;}
+  .highlight-card h3{margin:8px 0 6px; font-size:20px;}
+  .highlight-card p{font-size:14.5px; color:#e5e7eb; margin:0;}
+
+  footer{padding:36px 0 60px; font-size:12.5px; color:var(--muted);}
+  .archive-list{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;}
+  .archive-list a{ display:inline-block; padding:6px 12px; border-radius:8px; background:var(--tag-bg); color:var(--tag-text); text-decoration:none; font-size:12.5px; font-weight:600; }
+  .sources-list{margin-top:10px; padding-left:0; list-style:none;}
+  .sources-list li{padding:6px 0; border-bottom:1px solid var(--border);}
+  .sources-list a{color:var(--accent); text-decoration:none;}
+  .sources-list .src-name{color:var(--muted); font-size:12px; margin-right:6px;}
+  .disclaimer{margin-top:24px; padding:14px 16px; background:var(--card); border:1px solid var(--border); border-radius:10px;}
+
+</style>
+</head>
+<body>
+<header class="hero"><div class="wrap">
+<div class="brand">DAILY STOCK BRIEFING</div><h1 class="title">Daily Stock Dashboard</h1>
+<div class="date">2026년 10월 17일 (토) · 데이터 기준: 미국·한국 모두 2026-10-16(금) 정규장 종가. 주말이라 10/16이 직전 거래일이다.</div>
+<div class="insight-box"><div class="label">TODAY'S INVESTMENT INSIGHT</div><div class="line">한국은 반등했지만 미국 나스닥 -2.1%·반도체지수 -3.83%로 한 주를 마쳐 AI 투자 자금조달 불안은 아직 풀리지 않았다. 이익 훼손의 직접 증거는 확인되지 않았으므로 서두르지 말고 10월 말 실적과 금리를 확인하며 나누어 판단하는 구간이다.</div></div>
+<div class="mood-row"><span class="mood-badge mood-RISKOFF">🔴 MARKET MOOD: RISK-OFF</span> <span class="asof">데이터 기준 시각: 2026-10-17(토) 조사 · 지수·종목은 10/16 종가 · 금리·유가·금·비트코인은 출처별 시점 차이가 있는 보도 수치</span></div>
+</div></header>
+<div class="wrap">
+<section><h2><span class="num">2.</span> Market Mood</h2>
+<p class="section-desc">주식·금리·환율·물가·고용·지정학·AI 투자·반도체를 종합한 판단.</p>
+<div class="mood-row"><span class="mood-badge mood-RISKOFF">🔴 MARKET MOOD: RISK-OFF</span></div>
+<div class="cause-block"><b>한 문장: 한국 증시는 전날 서킷브레이커 뒤 반등했지만, 미국은 반도체지수 8거래일 연속 하락과 유가 급등으로 위험 회피가 이어졌다.</b><br><br>
+<b>근거 — </b>S&amp;P 500은 -1.1%로 주간 -1.9%, 나스닥은 -2.1%였고 필라델피아 반도체지수는 -3.83%였다(AI 투자 자금조달 비용 우려 보도). WTI는 7거래일 연속 상승했고 정산가가 $101대라는 보도가 있다(단일 출처). 10월 14일 CPI에서 근원 물가가 예상(+0.2%)보다 높은 +0.3%로 나오며 10월 금리 인상 가능성 논의가 되살아났으나 확률 추정은 출처별로 약 20%~50%로 엇갈린다. 연준은 9월에 3.75~4.00%로 인상한 상태다(보도). 한국은 코스피 +2.05%, 코스닥 +4.46%로 반등하고 환율이 1,331원대로 내려 외국인이 9거래일 만에 순매수로 돌아섰지만, 이달 하락폭의 일부만 되돌린 수준이다. 반등과 구조적 개선은 구분해야 하므로 RISK-OFF를 유지한다.</div></section>
+<section class="alt"><h2><span class="num">3.</span> Today's Investment Insight</h2>
+<p class="section-desc">상세 행동 방향은 15번 섹션 참조.</p>
+<div class="insight-box" style="background:var(--tag-bg); border:1px solid var(--border);"><div class="label" style="color:var(--accent);">오늘의 투자 한 줄</div><div class="line" style="color:var(--text);">한국의 하루 반등은 안도일 뿐 AI 자금조달 불안과 금리 부담은 그대로다. 이익 훼손 신호가 없는 만큼 서두르지 않고 실적과 수급을 확인하며 나누어 판단한다.</div></div></section>
+<section><h2><span class="num">4.</span> Market Snapshot</h2>
+<p class="section-desc">모든 수치는 2026-10-16 기준. 금리·유가·금·비트코인은 공식 종가를 확인하지 못해 보도 수치로 표시했다. 방향은 ▲/▼와 상승/하락 텍스트로 함께 표기한다.</p>
+<div class="grid-5"><div class="metric-card"><div class="metric-name">S&amp;P 500</div><div class="metric-value">7,659.44</div><div class="metric-change down">▼ -1.1% (하락)</div><div class="metric-date">2026-10-16 종가 (-84.62pt) · 주간 -1.9%</div></div><div class="metric-card"><div class="metric-name">Nasdaq</div><div class="metric-value">26,140.03</div><div class="metric-change down">▼ -2.1% (하락)</div><div class="metric-date">2026-10-16 종가 (-572.99pt)</div></div><div class="metric-card"><div class="metric-name">Dow Jones</div><div class="metric-value">52,002.41</div><div class="metric-change down">▼ -0.3% (하락)</div><div class="metric-date">2026-10-16 종가 (-175.28pt)</div></div><div class="metric-card"><div class="metric-name">KOSPI</div><div class="metric-value">5,668.05</div><div class="metric-change up">▲ +2.05% (상승)</div><div class="metric-date">2026-10-16 종가 (+113.83pt) · 7거래일 하락 후 반등</div></div><div class="metric-card"><div class="metric-name">KOSDAQ</div><div class="metric-value">794.78</div><div class="metric-change up">▲ +4.46% (상승)</div><div class="metric-date">2026-10-16 종가 (+33.96pt) · 전일 서킷브레이커 후 반등</div></div><div class="metric-card"><div class="metric-name">USD/KRW</div><div class="metric-value">1,331.4원</div><div class="metric-change down">▼ -13.2원 (원화 강세)</div><div class="metric-date">2026-10-16 마감 · 환율 하락=원화 강세</div></div><div class="metric-card"><div class="metric-name">미 10년물 금리</div><div class="metric-value">약 5.09%</div><div class="metric-change flat">▲ +0.01%p (보합 수준)</div><div class="metric-date">2026-10-16 · Trading Economics 보도 · 공식 종가 미확인</div></div><div class="metric-card"><div class="metric-name">WTI / Brent</div><div class="metric-value">$101.41 / $109.86</div><div class="metric-change up">▲ +3.5% / +3.7% (상승)</div><div class="metric-date">2026-10-16 정산가 보도(1개 출처) · 장중 보도($97대)와 불일치</div></div><div class="metric-card"><div class="metric-name">Gold</div><div class="metric-value">약 $4,207</div><div class="metric-change up">▲ 약 +0.9% (상승)</div><div class="metric-date">2026-10-16 시세 스냅샷(시점 미상) · 정산가 미확인</div></div><div class="metric-card"><div class="metric-name">Bitcoin</div><div class="metric-value">약 $82,300</div><div class="metric-change flat">– 약 -0.2% (보합)</div><div class="metric-date">2026-10-16 오전 스냅샷(Schwab) · 마감값 미확인</div></div></div>
+<div class="cause-block"><b>왜 움직였나 — </b><b>미국:</b> 반도체주가 AI 투자 자금조달 비용 우려로 급락해 나스닥이 가장 크게 내렸고, 다우는 상대적으로 선방했다. <b>한국:</b> 전날 서킷브레이커 발동 후 낙폭 과대 인식과 외국인·기관 매수 전환으로 반등했다(장중 5,590~5,810 사이 등락). <b>환율·금리:</b> 환율은 13.2원 내렸고 미 10년물은 5.1% 안팎이다. <b>원자재:</b> 유가는 호르무즈 해협 공급 우려와 미국 원유재고 감소(-860만 배럴)가 배경으로 보도됐다. 금과 비트코인은 시점이 다른 스냅샷이라 방향성만 참고한다.</div></section>
+<section class="alt"><h2><span class="num">5.</span> Market Performance Chart</h2>
+<div class="chart-card"><h3>Market Performance (%) — 2026-10-16</h3><div class="chart-wrap"><canvas id="chartMarket"></canvas></div><div class="chart-note">S&amp;P 500 -1.1 · Nasdaq -2.1 · Dow -0.3 · KOSPI +2.05 · KOSDAQ +4.46 (차트가 보이지 않아도 위 카드에서 숫자를 확인할 수 있다)</div></div></section>
+<section><h2><span class="num">6.</span> My Watchlist</h2>
+<p class="section-desc">고정 5종목. 가격은 2026-10-16 종가이며 소스별로 약간의 차이가 있을 수 있다. 하루 등락만으로 평가하지 않는다.</p>
+<div class="stock-card"><div class="stock-head"><div><div class="stock-name">삼성전자</div><div class="stock-ticker">005930.KS</div></div><div class="stock-price"><div class="val">215,500원</div><div class="metric-change up">▲ +2.62% (상승)</div></div></div>
+<dl class="kv"><dt>오늘의 핵심 뉴스</dt><dd>코스피가 7거래일 연속 하락을 끊고 반등하는 가운데 +2.62% 마감. 장중 222,500원까지 올랐다. 이달 들어 약 -19.7% 하락한 상태(이투데이 보도).</dd><dt>왜 중요한가</dt><dd>낙폭이 컸던 만큼 기술적 반등과 외국인 9거래일 만의 순매수 전환이 겹쳤다. 다만 하루 반등이 추세 전환을 뜻하지는 않는다.</dd><dt>단기 관점 (수일~수주)</dt><dd>미국 SOX가 -3.83%로 8거래일 연속 하락해 월요일 한국 반도체 수급에 부담이 될 수 있다. 변동성 확대 국면.</dd><dt>중장기 관점 (6~24개월)</dt><dd>HBM4 경쟁력과 메모리 가격 흐름, 확정 실적이 핵심. 이익 수준은 견조하다는 이전 브리핑 내용이 있으나(3분기 잠정 영업이익 107.4조원, 이전 브리핑 인용) 이번 조사에서 재확인하지는 못했다.</dd><dt>Catalyst</dt><dd>외국인 수급 복귀 지속 여부, 3분기 확정 실적(10월 말), HBM4 공급 확대.</dd><dt>Risk</dt><dd>금리 5%대·AI 자금조달 불안, 메모리 가격 정점 논란, 중국 CXMT 추격(이전 브리핑 인용).</dd><dt>다음 체크 포인트</dt><dd>월요일(10/19) 외국인 수급, SOX 반등 여부, 10월 말 확정 실적.</dd></dl>
+<span class="stance">투자 관점: 보유 관점</span><div class="stance-reason">52주 고점 대비 -42.5%로 큰 조정이지만 하루 반등만으로 저점이라 단정할 수 없고, 이익 훼손 신호도 이번 조사에서는 확인되지 않았다. 수급과 실적이 확인될 때까지 기존 관점을 유지하며 변동성에 대비하는 단계다.</div></div><div class="stock-card"><div class="stock-head"><div><div class="stock-name">SK하이닉스</div><div class="stock-ticker">000660.KS</div></div><div class="stock-price"><div class="val">1,272,000원</div><div class="metric-change up">▲ +0.79% (상승)</div></div></div>
+<dl class="kv"><dt>오늘의 핵심 뉴스</dt><dd>장중 1,247,000원~1,325,000원을 오갔으나 상승분 대부분을 반납하고 소폭 상승 마감. 이달 들어 약 -28.4% 하락(이투데이 보도).</dd><dt>왜 중요한가</dt><dd>코스피 반등에도 상승폭이 작아 매수세가 약했다. 메모리 대표주로서 AI 반도체 심리의 온도계 역할을 한다.</dd><dt>단기 관점 (수일~수주)</dt><dd>SOX 8거래일 연속 하락이 이어져 반등의 지속성은 불확실. 장중 변동폭이 큰 점에 유의.</dd><dt>중장기 관점 (6~24개월)</dt><dd>HBM 선두 지위와 AI 데이터센터 투자 지속이 핵심. 수요 둔화의 직접 증거는 이번 조사에서 확인되지 않았으나 가격·점유율 데이터는 재확인하지 못했다.</dd><dt>Catalyst</dt><dd>HBM4 공급 확대, 3분기 실적 발표(10월 말 보도 기준), 외국인 순매수 지속.</dd><dt>Risk</dt><dd>메모리 사이클 정점 논란, AI 투자 자금조달 비용 상승, 변동성 확대.</dd><dt>다음 체크 포인트</dt><dd>10월 말 실적, 외국인 수급, Micron 등 동종업계 흐름.</dd></dl>
+<span class="stance">투자 관점: 관심 확대</span><div class="stance-reason">52주 고점 대비 -57.4%로 조정폭이 가장 크다. 다만 큰 낙폭이 곧 저평가를 뜻하지 않으며, 수급 공백이 원인인지 이익 전망 변화인지 실적으로 확인하는 것이 먼저다. 추적 강도를 높이는 단계이지 매수 신호가 아니다.</div></div><div class="stock-card"><div class="stock-head"><div><div class="stock-name">NVIDIA</div><div class="stock-ticker">NVDA</div></div><div class="stock-price"><div class="val">$214.13</div><div class="metric-change down">▼ -1.43% (하락)</div></div></div>
+<dl class="kv"><dt>오늘의 핵심 뉴스</dt><dd>반도체지수(SOX)가 -3.83%로 8거래일 연속 하락한 가운데 NVIDIA는 상대적으로 선방. 젠슨 황은 AI 투자 우려가 “지나갈 것”이라고 언급(보도).</dd><dt>왜 중요한가</dt><dd>업종 전반이 AI 투자 자금조달 비용 부담으로 약세인데 NVIDIA의 낙폭은 작았다. 다만 종가 수치는 출처별 차이가 있어(전일 종가 $217.23) 근사치로 본다.</dd><dt>단기 관점 (수일~수주)</dt><dd>금리와 AI 자금조달 심리에 연동된 변동성이 이어질 전망.</dd><dt>중장기 관점 (6~24개월)</dt><dd>GPU 수요와 하이퍼스케일러 CAPEX가 핵심. 수요 둔화의 직접 증거는 확인되지 않았다.</dd><dt>Catalyst</dt><dd>10월 말 하이퍼스케일러 실적에서의 CAPEX 가이던스, 11월 NVIDIA 실적(일정 미확정).</dd><dt>Risk</dt><dd>자금조달 우려(CoreWeave 등 고객·투자처), OpenAI 매출 기대 변화, 금리 상승.</dd><dt>다음 체크 포인트</dt><dd>10월 말 Microsoft·Amazon 등 CAPEX, 미 10년물 금리.</dd></dl>
+<span class="stance">투자 관점: 보유 관점</span><div class="stance-reason">52주 고점($243.37) 대비 -12.0%로 조정폭이 크지 않아 싸다고 볼 근거는 부족하고, 펀더멘털 훼손 신호도 없다. 기존 관점을 유지하며 CAPEX 데이터를 확인하는 구간이다.</div></div><div class="stock-card"><div class="stock-head"><div><div class="stock-name">Apple</div><div class="stock-ticker">AAPL</div></div><div class="stock-price"><div class="val">$343.46</div><div class="metric-change up">▲ +0.4% (상승)</div></div></div>
+<dl class="kv"><dt>오늘의 핵심 뉴스</dt><dd>iPhone Duo 사전예약이 매진됐다는 보도와 함께 사상 최고 종가를 기록(MacDailyNews·Motley Fool 보도). 이 종가는 소스 간 약간 차이가 있다.</dd><dt>왜 중요한가</dt><dd>나스닥이 -2.1% 하락한 날 홀로 올라 방어 성격의 자금이 유입됐을 가능성이 있다(해석).</dd><dt>단기 관점 (수일~수주)</dt><dd>고점 부근이라 금리·실적 이벤트에 민감.</dd><dt>중장기 관점 (6~24개월)</dt><dd>서비스·하드웨어 신제품 사이클이 핵심이나 신제품 수요가 실적 가이던스에 반영되는지 확인이 필요.</dd><dt>Catalyst</dt><dd>iPhone Duo 판매 실적, 10월 말 실적(날짜는 이번 조사에서 미확인).</dd><dt>Risk</dt><dd>높은 밸류에이션 부담, 금리 상승, 부품·원가 이슈.</dd><dt>다음 체크 포인트</dt><dd>실적 발표, 신제품 출하 데이터.</dd></dl>
+<span class="stance gold">투자 관점: 리스크 점검</span><div class="stance-reason">52주 고점 대비 -1.4%로 고점 부근에 있어 상승했다는 이유로 긍정 평가하지 않는다. 수요·원가 가정과 밸류에이션 부담을 점검하는 단계다.</div></div><div class="stock-card"><div class="stock-head"><div><div class="stock-name">Amazon</div><div class="stock-ticker">AMZN</div></div><div class="stock-price"><div class="val">$249.59</div><div class="metric-change down">▼ -2.03% (하락)</div></div></div>
+<dl class="kv"><dt>오늘의 핵심 뉴스</dt><dd>뚜렷한 단일 원인은 확인되지 않음. 나스닥 약세와 AI 투자 비용 우려가 배경일 수 있으나 해석이다.</dd><dt>왜 중요한가</dt><dd>10월 29일 전후 3분기 실적(Trefis 보도, 미확정)에서 AWS 성장과 CAPEX(2026년 약 $220B 보도)가 핵심이다.</dd><dt>단기 관점 (수일~수주)</dt><dd>실적 전까지 시장·금리 변수에 연동.</dd><dt>중장기 관점 (6~24개월)</dt><dd>AWS 성장, 광고·물류 마진 개선이 핵심. 대규모 CAPEX의 수익화 속도가 주가 관건.</dd><dt>Catalyst</dt><dd>3분기 AWS 성장률, 연간 CAPEX 가이던스.</dd><dt>Risk</dt><dd>AI 투자 비용 대비 수익화 지연, 금리 상승, 소비 둔화.</dd><dt>다음 체크 포인트</dt><dd>10월 말 실적 발표.</dd></dl>
+<span class="stance">투자 관점: 분할 접근 검토</span><div class="stance-reason">52주 고점($287.17) 대비 -13.1%로 조정되었지만 하루 -2%는 펀더멘털 변화가 아니다. 금리가 높은 국면이고 실적이 가까워 한 번에 판단하기보다 시간·가격을 나누어 접근하는 방안을 검토할 수 있다(권유 아님).</div></div></section>
+<section class="alt"><h2><span class="num">7.</span> Watchlist Performance</h2>
+<div class="chart-card"><h3>Watchlist Daily Performance (%) — 2026-10-16</h3><div class="chart-wrap"><canvas id="chartWatchlist"></canvas></div><div class="chart-note">삼성전자 +2.62 · SK하이닉스 +0.79 · NVIDIA -1.43 · Apple +0.4(보도 근사치) · Amazon -2.03</div></div></section>
+<section><h2><span class="num">8.</span> 30-Day Price Trend</h2>
+<div class="warn-box">데이터 확인 불가 — 5개 종목의 30거래일 일별 시계열을 신뢰할 수 있는 출처에서 확보하지 못했다. 값을 추측해서 만들지 않았으므로 이 그래프는 생성하지 않았다.</div></section>
+<section class="alt"><h2><span class="num">9.</span> 52-Week Drawdown</h2>
+<p class="section-desc">(현재가 / 52주 고점 − 1) × 100. 많이 조정받았다는 이유만으로 저평가라고 판단하지 않는다.</p>
+<div class="table-wrap"><table><tr><th>종목</th><th>52주 고점</th><th>현재가 (10/16)</th><th>고점 대비</th></tr>
+<tr><td>삼성전자</td><td>374,500원</td><td>215,500원</td><td>▼ -42.5% (하락)</td></tr>
+<tr><td>SK하이닉스</td><td>2,987,000원</td><td>1,272,000원</td><td>▼ -57.4% (하락)</td></tr>
+<tr><td>NVIDIA</td><td>$243.37</td><td>$214.13</td><td>▼ -12.0% (하락)</td></tr>
+<tr><td>Apple</td><td>$348.15</td><td>$343.46</td><td>▼ -1.4% (하락)</td></tr>
+<tr><td>Amazon</td><td>$287.17</td><td>$249.59</td><td>▼ -13.1% (하락)</td></tr></table></div>
+<div class="chart-card"><h3>52-Week Drawdown (%)</h3><div class="chart-wrap"><canvas id="chartDrawdown"></canvas></div></div>
+<div class="note-box">52주 고점은 이전 브리핑에서 확인한 값(장중 기준일 수 있음)을 재사용했고 이번 조사에서 재확인하지 못했다. 특히 삼성전자·SK하이닉스 고점은 직접 재검증하지 못했다. 큰 조정폭은 저평가의 증거가 아니다.</div></section>
+<section><h2><span class="num">10.</span> AI / Semiconductor Cycle</h2>
+<span class="cycle-badge">사이클 평가: 판단 어려움 (유지 쪽 무게, 단 주가는 약화)</span>
+<div class="note-box"><b>질문: 현재 뉴스와 데이터는 확대·정체·둔화 중 무엇을 의미하는가?</b><br>수요·이익 측면의 둔화 직접 증거는 이번 조사에서 확인되지 않았다. 반면 주가는 SOX 8거래일 연속 하락(10/16 -3.83%)으로 약화됐고, 원인은 수요 둔화보다 AI 투자의 자금조달 비용과 수익화 불안으로 보도된다. 한국 메모리주는 수급 영향이 겹쳤다. 가격 자료(HBM·DRAM·NAND)와 하이퍼스케일러 CAPEX 최신치는 이번에 재확인하지 못했으므로 “강화”나 “약화”를 단정하지 않는다.</div>
+<div class="note-box"><b>다음 확인 지점:</b> 10월 말 Microsoft·Amazon 등 CAPEX 가이던스, 삼성전자·SK하이닉스 실적, 금리 안정 여부. CAPEX가 낮아지거나 금리가 계속 오르면 “약화”로 낮춘다.</div></section>
+<section class="alt"><h2><span class="num">11.</span> Opportunity Scan — 저점 매수 후보</h2>
+<div class="warn-box">오늘은 뚜렷한 저점 매수 후보 없음</div>
+<div class="note-box">후보 종목의 펀더멘털·밸류에이션을 신뢰할 수 있는 출처로 검증하지 못했고, 주가 하락만으로 후보를 만들지 않았다. 가장 많이 조정된 종목은 이미 Watchlist(삼성전자·SK하이닉스)에 있다.<br><b>Value Trap Check:</b> 점검 대상 후보가 없다. 참고로 두 종목은 매출 감소·적자 신호가 아니라 수급과 금리 영향으로 보도되나, 메모리 가격 정점 여부와 중국 업체 추격은 계속 점검해야 한다.</div></section>
+<section><h2><span class="num">12.</span> New Ideas</h2>
+<div class="warn-box">오늘은 새롭게 추가할 만한 종목이 뚜렷하지 않음</div>
+<div class="note-box">검증 가능한 최신 가격·실적 자료를 확보한 후보가 없어 억지로 선정하지 않았다. 최근 브리핑에서 소개한 종목(Quanta Services, Eli Lilly, Palo Alto Networks, Netflix, 한화에어로스페이스 등)은 REPEAT FILTER에 따라 새로운 Catalyst가 없어 제외했다. Discovery Score 차트도 데이터가 없어 생성하지 않았다.</div></section>
+<section class="alt"><h2><span class="num">13.</span> 오늘 한 기업만 더 공부한다면</h2>
+<div class="highlight-card"><div class="tag">STUDY PICK</div><h3>해당 없음</h3><p>오늘은 신규 후보가 없어 선정하지 않았다. 굳이 하나를 고른다면 Watchlist의 SK하이닉스(실적 발표 전 HBM 점유율과 메모리 가격을 공부하는 용도)이며, 이는 매수 추천이 아니다.</p></div>
+<div class="note-box">기존 Watchlist보다 추가 리서치 가치가 뚜렷하게 높은 신규 기업은 없다. 현재는 기존 Watchlist를 계속 추적하는 것이 더 중요함.</div></section>
+<section><h2><span class="num">14.</span> Watchlist vs New Opportunity</h2>
+<div class="note-box">신규 후보가 없으므로 비교 대상이 없다. 기존 Watchlist 중 52주 고점 대비 조정폭이 큰 종목은 SK하이닉스(-57.4%), 삼성전자(-42.5%), Amazon(-13.1%), NVIDIA(-12.0%) 순이다. 다만 낙폭이 클수록 매력적이라는 뜻은 아니며, 실적 확인 이후에 접근 강도를 판단하는 것이 합리적이다.</div></section>
+<section class="alt"><h2><span class="num">15.</span> Today's Action Direction</h2>
+<div class="insight-grid">
+<div class="insight-card"><div class="k">오늘의 행동 방향</div><div class="v">기존 포지션을 유지하고 신규 진입을 서두르지 않는다. 한국 증시의 하루 반등은 이달 낙폭의 일부만 되돌린 수준이어서, 외국인 수급 지속과 10월 말 실적을 확인한 뒤 가격과 시간을 나누어 판단한다. 현금 비중을 유지하며 장기 성장 추세는 계속 추적한다(권유 아님).</div></div>
+<div class="insight-card"><div class="k">오늘 가장 관심 있게 볼 종목</div><div class="v">SK하이닉스. 조정폭이 가장 크고 메모리·AI 사이클의 핵심이지만, 이익 훼손이 아닌 수급 문제인지 실적으로 확인해야 하는 종목이라 추적 강도를 높일 가치가 있다. 매수 추천은 아니다.</div></div>
+<div class="insight-card"><div class="k">오늘 가장 중요한 Risk</div><div class="v">금리 상승과 AI 투자 자금조달 불안이 이어져 하이퍼스케일러가 CAPEX를 낮추는 경우. 이는 현재의 “유지” 판단을 뒤집을 수 있다.</div></div>
+<div class="insight-card"><div class="k">지금 당장 반응하지 않아도 되는 뉴스</div><div class="v">Apple의 하루 사상 최고 종가와 iPhone Duo 사전예약 소식. 단기 심리에는 긍정적이나 중장기 실적에는 실제 판매 데이터 확인이 먼저다.</div></div>
+<div class="insight-card"><div class="k">다음 판단 시점</div><div class="v">월요일(10/19) 한국 장 수급 · 10월 말 FOMC(정확한 일자는 이번 조사에서 미확인) · Microsoft 등 하이퍼스케일러 실적(10/28 전후, 이전 브리핑 기준) · Amazon 실적(10/29 전후 보도, 미확정) · 삼성전자 확정 실적 · SK하이닉스 실적 · Apple 실적(날짜 미확인).</div></div>
+</div></section>
+</div>
+<footer><div class="wrap"><h2 style="font-size:16px;">Recent Briefings — Archive</h2><div class="archive-list"><a href="archive/2026-10-17.html">2026-10-17</a><a href="archive/2026-10-16.html">2026-10-16</a><a href="archive/2026-10-15.html">2026-10-15</a><a href="archive/2026-10-14.html">2026-10-14</a><a href="archive/2026-10-13.html">2026-10-13</a><a href="archive/2026-10-12.html">2026-10-12</a><a href="archive/2026-10-11.html">2026-10-11</a></div>
+<div class="disclaimer"><b>16. Sources</b> — 아래는 이번 브리핑에 사용한 주요 뉴스·데이터다. 시세·시황 수치는 소스별 시점 차이가 있을 수 있으며 확인하지 못한 값은 “확인 불가”로 표시했다. 본 자료는 투자 판단을 돕는 정보이며 매수·매도 권유가 아니다.
+<ul class="sources-list"><li><span class="src-name">AP (KTVB)</span><a href="https://www.ktvb.com/article/syndication/associatedpress/how-major-us-stock-indexes-fared-friday-10162026/616-a0bdb55c-653b-410b-bc01-ae1f2a7523c8" target="_blank" rel="noopener">How major US stock indexes fared Friday 10/16/2026</a></li><li><span class="src-name">Econ Currents</span><a href="https://econcurrents.substack.com/p/16-october-2026-market-close-and" target="_blank" rel="noopener">16 October 2026 Market Close & Major Financial Headlines: Tech Sell-Off Hits Nasdaq Hardest</a></li><li><span class="src-name">Strategitz</span><a href="https://strategitz.substack.com/p/global-markets-close-october-16-2026" target="_blank" rel="noopener">Global Markets Close — October 16, 2026</a></li><li><span class="src-name">머니투데이</span><a href="https://www.mt.co.kr/stock/2026/10/16/2026101615331353587" target="_blank" rel="noopener">[스팟] 코스피 113.83포인트(2.05%) 오른 5668.05 마감</a></li><li><span class="src-name">이투데이</span><a href="https://www.etoday.co.kr/news/view/2636760" target="_blank" rel="noopener">[속보] 코스피 113.83포인트(2.05%) 오른 5668.06(마감)</a></li><li><span class="src-name">이투데이</span><a href="https://www.etoday.co.kr/news/view/2636801" target="_blank" rel="noopener">이달 시총 678조 증발…삼성전자·SK하이닉스 반전 조건은?</a></li><li><span class="src-name">스페셜타임스</span><a href="https://www.specialtimes.co.kr/news/articleView.html?idxno=474996" target="_blank" rel="noopener">삼성전자 2.62%·SK하이닉스 0.79% 상승 마감</a></li><li><span class="src-name">Businesskorea</span><a href="https://www.businesskorea.co.kr/news/articleView.html?idxno=279010" target="_blank" rel="noopener">[마감 시황] 코스피, 7거래일 연속 하락 끊어내며 5,600선 회복…원/달러 환율 1330원대</a></li><li><span class="src-name">HeyGoTrade</span><a href="https://www.heygotrade.com/en/news/nvidia-nvda-stock-news-october-16-2026/" target="_blank" rel="noopener">Nvidia Stock News (Oct 16, 2026)</a></li><li><span class="src-name">24/7 Wall St.</span><a href="https://247wallst.com/investing/2026/10/16/intel-and-amd-drop-3-as-rotation-out-of-ai-chip-stocks-continues-nvidia-holds-steady/" target="_blank" rel="noopener">Intel and AMD Drop 3% as Rotation Out of AI Chip Stocks Continues; NVIDIA Holds Steady</a></li><li><span class="src-name">Motley Fool</span><a href="https://www.fool.com/coverage/stock-market-today/2026/10/16/stock-market-today-oct-16-apple-edges-higher-on-iphone-duo-preorder-surge/" target="_blank" rel="noopener">Stock Market Today, Oct. 16: Apple Edges Higher on iPhone Duo Preorder Surge</a></li><li><span class="src-name">MacDailyNews</span><a href="https://macdailynews.com/2026/10/16/apple-shares-hit-new-all-time-closing-high-35/" target="_blank" rel="noopener">Apple shares hit new all-time closing high</a></li><li><span class="src-name">Investing.com</span><a href="https://www.investing.com/equities/amazon-com-inc-historical-data" target="_blank" rel="noopener">Amazon.com Stock Price History</a></li><li><span class="src-name">Trefis</span><a href="https://www.trefis.com/stock/amzn/articles2/617445/the-dates-that-matter-most-for-amazon-stock/2026-10-02" target="_blank" rel="noopener">The Dates That Matter Most For Amazon Stock</a></li><li><span class="src-name">Trading Economics</span><a href="https://tradingeconomics.com/united-states/government-bond-yield" target="_blank" rel="noopener">US 10 Year Treasury Note Yield</a></li><li><span class="src-name">Schwab</span><a href="https://www.schwab.com/learn/story/stock-market-update-open" target="_blank" rel="noopener">Stocks on Pace for Weekly Loss Despite Yield Drop</a></li><li><span class="src-name">TokenPost</span><a href="https://www.tokenpost.com/news/investing/33503" target="_blank" rel="noopener">Brent Crude Settles at $109.86 as WTI Closes Above $100</a></li><li><span class="src-name">Fortune</span><a href="https://fortune.com/article/price-of-oil-10-16-2026" target="_blank" rel="noopener">Current price of oil as of Oct. 16, 2026</a></li><li><span class="src-name">InvestmentNews</span><a href="https://www.investmentnews.com/equities/core-inflation-comes-in-hot-again-increasing-the-likelihood-of-an-october-fed-rate-hike/268599" target="_blank" rel="noopener">Core inflation comes in hot again, increasing the likelihood of an October Fed rate hike</a></li><li><span class="src-name">Newsquawk</span><a href="https://www.newsquawk.com/headlines/primer-us-cpi-due-wednesday-14th-october-2026-at-1330-bst--0830-edt" target="_blank" rel="noopener">Primer: US CPI due Wednesday 14th October 2026</a></li><li><span class="src-name">Yahoo Finance</span><a href="https://finance.yahoo.com/markets/live/stock-market-today-dow-sp-500-nasdaq-futures-mixed-amid-volatile-week-112939401.html" target="_blank" rel="noopener">Stock market today: Dow, S&P 500, Nasdaq sink as tech sell-off caps volatile week</a></li></ul></div></div></footer>
+<script>
+(function(){
+  if(typeof Chart==='undefined'){return;}
+  var cs=getComputedStyle(document.documentElement);
+  var upColor=cs.getPropertyValue('--up').trim()||'#15803d';
+  var downColor=cs.getPropertyValue('--down').trim()||'#b91c1c';
+  var gridColor='rgba(128,128,128,.2)';
+  var textColor=cs.getPropertyValue('--text').trim()||'#1a1d23';
+  function colorFor(v){return v>=0?upColor:downColor;}
+  Chart.defaults.color=textColor;
+  function bar(id,labels,data,mixed,tip){
+    new Chart(document.getElementById(id),{type:'bar',
+      data:{labels:labels,datasets:[{label:'등락률 (%)',data:data,backgroundColor:mixed?data.map(colorFor):downColor,borderRadius:6,maxBarThickness:60}]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return (mixed&&c.parsed.y>0?'+':'')+c.parsed.y+'% ('+tip(c.parsed.y)+')';}}}},
+        scales:{y:{grid:{color:gridColor},ticks:{callback:function(v){return v+'%';}}},x:{grid:{display:false}}}}});
+  }
+  var ud=function(v){return v>0?'상승':(v<0?'하락':'보합');};
+  bar('chartMarket',["S&P 500","Nasdaq","Dow Jones","KOSPI","KOSDAQ"],[-1.1,-2.1,-0.3,2.05,4.46],true,ud);
+  var wl=['삼성전자','SK하이닉스','NVIDIA','Apple','Amazon'];
+  bar('chartWatchlist',wl,[2.62,0.79,-1.43,0.4,-2.03],true,ud);
+  bar('chartDrawdown',wl,[-42.5,-57.4,-12.0,-1.4,-13.1],false,function(v){return '52주 고점 대비 하락';});
+})();
+</script>
+</body>
+</html>
